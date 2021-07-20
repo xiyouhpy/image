@@ -19,5 +19,5 @@ func Server() {
 // Router ...
 func registerService(r *gin.Engine) {
 	// 图片压缩图片接口
-	r.GET("/image/ImgCompress", controller.ImgCompress)
+	r.GET("/image/imgCompress", controller.ImgCompress)
 }

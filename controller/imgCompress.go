@@ -1,16 +1,20 @@
 package controller
 
 import (
+	"os"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/xiyouhpy/image/base"
 	"github.com/xiyouhpy/image/model/img"
 	"github.com/xiyouhpy/image/service/compress"
-	"os"
-	"strings"
 )
 
-// DstPath 图片压缩图片功能配置的压缩图片保存目录
+// DstPath 压缩的水印图片目录
 const DstPath = "./config/water_pic/"
+
+// NewPath 压缩的结果图片目录
+const NewPath = "./data/result/"
 
 // ImgCompress 图片压缩接口
 func ImgCompress(c *gin.Context) {
@@ -36,9 +40,9 @@ func ImgCompress(c *gin.Context) {
 	}
 
 	// 执行图片压缩逻辑
-	err := compress.ImgCompress(srcName, dstName, newName)
+	err := compress.ImgCompress(srcName, dstName, NewPath+newName)
 	if err != nil {
-		JsonRet(c, base.ErrCallServiceError)
+		JsonRet(c, base.ErrServiceError)
 		return
 	}
 

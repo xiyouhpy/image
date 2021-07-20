@@ -1,17 +1,18 @@
 package img
 
 import (
-	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // dataDir 下载文件目录
-const dataDir = "./data/"
+const dataDir = "./data/download/"
 
 // Download 下载url的图片，返回下载文件名
 func Download(strURL string) (string, error) {
@@ -26,14 +27,14 @@ func Download(strURL string) (string, error) {
 	dstFile := dataDir + filepath.Base(strURL)
 	fileSize, _ := strconv.ParseInt(rsp.Header.Get("Content-Length"), 10, 32)
 	if !isDownload(dstFile, fileSize) {
-		file, err := os.Create(dstFile)
-		if err != nil {
-			logrus.Warn("os.Create err, file:%s, err:%s", dstFile, err.Error())
-			return "", err
+		file, fileErr := os.Create(dstFile)
+		if fileErr != nil {
+			logrus.Warn("os.Create err, file:%s, err:%s", dstFile, fileErr.Error())
+			return "", fileErr
 		}
 		defer file.Close()
 
-		if _, err := io.Copy(file, rsp.Body); err != nil {
+		if _, err = io.Copy(file, rsp.Body); err != nil {
 			logrus.Warn("os.Copy err, err:%s", err.Error())
 			return "", err
 		}
