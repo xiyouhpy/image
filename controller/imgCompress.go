@@ -2,31 +2,28 @@ package controller
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xiyouhpy/image/base"
+	"github.com/xiyouhpy/image/config"
 	"github.com/xiyouhpy/image/model/img"
 	"github.com/xiyouhpy/image/service/compress"
 )
-
-// DstPath 压缩的水印图片目录
-const DstPath = "./config/water_pic/"
-
-// NewPath 压缩的结果图片目录
-const NewPath = "./data/result/"
 
 // ImgCompress 图片压缩接口
 func ImgCompress(c *gin.Context) {
 	srcName := c.DefaultQuery("src_name", "")
 	newName := c.DefaultQuery("new_name", "")
-	strIndex := c.DefaultQuery("compress_idx", "news_log")
-
-	// 判断并获取压缩图片
+	strIndex := c.DefaultQuery("compress_idx", "news_logo")
 	dstName := getCompressImgFilePath(strIndex)
-	if dstName == "" {
+	if dstName == "" || srcName == "" {
 		JsonRet(c, base.ErrParamsError)
 		return
+	}
+	if newName == "" {
+		newName = filepath.Base(srcName)
 	}
 
 	// 处理网络图片情况
@@ -40,22 +37,22 @@ func ImgCompress(c *gin.Context) {
 	}
 
 	// 执行图片压缩逻辑
-	err := compress.ImgCompress(srcName, dstName, NewPath+newName)
+	err := compress.ImgCompress(srcName, dstName, config.ResultPath+newName)
 	if err != nil {
 		JsonRet(c, base.ErrServiceError)
 		return
 	}
 
-	JsonRet(c, base.ErrSuccess)
+	JsonRet(c, base.ErrSuccess, config.ResultPath+newName)
 	return
 }
 
 // getCompressImgFilePath 查找索引文件路径
 func getCompressImgFilePath(strIndex string) string {
-	strFileName := strIndex + ".png"
+	strFileName := config.WaterPath + strIndex + ".png"
 	if _, err := os.Stat(strFileName); os.IsNotExist(err) {
 		return ""
 	}
 
-	return DstPath + strFileName
+	return strFileName
 }

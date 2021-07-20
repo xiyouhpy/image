@@ -9,10 +9,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/xiyouhpy/image/config"
 )
-
-// dataDir 下载文件目录
-const dataDir = "./data/download/"
 
 // Download 下载url的图片，返回下载文件名
 func Download(strURL string) (string, error) {
@@ -20,22 +18,23 @@ func Download(strURL string) (string, error) {
 	client.Timeout = time.Second * 600
 	rsp, err := client.Get(strURL)
 	if err != nil {
+		logrus.Warnf("client.Get err, url:%s, err:%s", strURL, err.Error())
 		return "", err
 	}
 	defer rsp.Body.Close()
 
-	dstFile := dataDir + filepath.Base(strURL)
+	dstFile := config.DownloadDir + filepath.Base(strURL)
 	fileSize, _ := strconv.ParseInt(rsp.Header.Get("Content-Length"), 10, 32)
 	if !isDownload(dstFile, fileSize) {
 		file, fileErr := os.Create(dstFile)
 		if fileErr != nil {
-			logrus.Warn("os.Create err, file:%s, err:%s", dstFile, fileErr.Error())
+			logrus.Warnf("os.Create err, file:%s, err:%s", dstFile, fileErr.Error())
 			return "", fileErr
 		}
 		defer file.Close()
 
 		if _, err = io.Copy(file, rsp.Body); err != nil {
-			logrus.Warn("os.Copy err, err:%s", err.Error())
+			logrus.Warnf("os.Copy err, err:%s", err.Error())
 			return "", err
 		}
 	}

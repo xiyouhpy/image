@@ -2,7 +2,6 @@ package compress
 
 import (
 	"errors"
-	"github.com/sirupsen/logrus"
 	"image"
 	"image/draw"
 	"image/jpeg"
@@ -10,6 +9,8 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // ImgCompress 图片压缩图片
@@ -17,12 +18,12 @@ import (
 func ImgCompress(srcImgName string, dstImgName string, newImgName string) error {
 	srcImgDec, srcErr := imgDecode(srcImgName)
 	if srcErr != nil {
-		logrus.Warn("imgDecode err, img_name:%s, err:%s", srcImgName, srcErr.Error())
+		logrus.Warnf("imgDecode err, img_name:%s, err:%s", srcImgName, srcErr.Error())
 		return srcErr
 	}
 	dstImgDec, dstErr := imgDecode(dstImgName)
 	if dstErr != nil {
-		logrus.Warn("imgDecode err, img_name:%s, err:%s", dstImgName, dstErr.Error())
+		logrus.Warnf("imgDecode err, img_name:%s, err:%s", dstImgName, dstErr.Error())
 		return dstErr
 	}
 
@@ -39,7 +40,7 @@ func ImgCompress(srcImgName string, dstImgName string, newImgName string) error 
 
 	// 生成合成图片，统一使用 jpeg 后缀（空间占用比较小）
 	if imgErr := imgEncode(newImgName, srcRGBA); imgErr != nil {
-		logrus.Warn("imgEncode err, img_name:%s, err:%s", newImgName, imgErr.Error())
+		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newImgName, imgErr.Error())
 		return imgErr
 	}
 	return nil
@@ -51,7 +52,7 @@ func ImgCompress(srcImgName string, dstImgName string, newImgName string) error 
 func imgDecode(imgName string) (image.Image, error) {
 	imgBin, imgErr := os.Open(imgName)
 	if imgErr != nil {
-		logrus.Warn("os.Open err, img_name:%s, err:%s", imgName, imgErr.Error())
+		logrus.Warnf("os.Open err, img_name:%s, err:%s", imgName, imgErr.Error())
 		return nil, imgErr
 	}
 	defer imgBin.Close()
@@ -78,13 +79,13 @@ func imgDecode(imgName string) (image.Image, error) {
 func imgEncode(imgName string, srcRGBA *image.NRGBA) error {
 	if _, imgErr := os.Stat(imgName); os.IsExist(imgErr) {
 		if imgErr = os.Remove(imgName); imgErr != nil {
-			logrus.Warn("os.Remove err, img_name:%s, err:%s", imgName, imgErr.Error())
+			logrus.Warnf("os.Remove err, img_name:%s, err:%s", imgName, imgErr.Error())
 			return imgErr
 		}
 	}
 	imgNew, imgErr := os.Create(imgName)
 	if imgErr != nil {
-		logrus.Warn("os.Create err, img_name:%s, err:%s", imgName, imgErr.Error())
+		logrus.Warnf("os.Create err, img_name:%s, err:%s", imgName, imgErr.Error())
 		return imgErr
 	}
 	defer imgNew.Close()
