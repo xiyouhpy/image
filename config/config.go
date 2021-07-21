@@ -7,5 +7,4 @@ const WaterPicDir = "./config/water/pic/"
 const WaterTtfDir = "./config/water/ttf/"
 
 // ResultDir 压缩的结果图片目录
-//const ResultDir = "./data/result/"
-const ResultDir = "/Users/hanpeiyan/Desktop/"
+const ResultDir = "./data/result/"
