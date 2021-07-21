@@ -1,10 +1,11 @@
 package config
 
-// WaterPath 压缩的水印图片目录
-const WaterPath = "./config/water/"
+// WaterPicDir 压缩的水印图片目录
+const WaterPicDir = "./config/water/pic/"
 
-// ResultPath 压缩的结果图片目录
-const ResultPath = "./data/result/"
+// WaterTtfDir 压缩的水印ttf目录
+const WaterTtfDir = "./config/water/ttf/"
 
-// DownloadDir 下载文件目录
-const DownloadDir = "./data/download/"
+// ResultDir 压缩的结果图片目录
+//const ResultDir = "./data/result/"
+const ResultDir = "/Users/hanpeiyan/Desktop/"
