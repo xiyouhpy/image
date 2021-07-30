@@ -3,11 +3,11 @@ package router
 import (
 	"os"
 
+	"github.com/xiyouhpy/image/base"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/gin-gonic/gin"
-	"github.com/xiyouhpy/image/base"
-	"github.com/xiyouhpy/image/config"
 	"github.com/xiyouhpy/image/controller"
 )
 
@@ -36,19 +36,19 @@ func registerService(r *gin.Engine) {
 // initPath ...
 func initPath() bool {
 	// 检查并创建 result 目录
-	if _, err := os.Stat(config.ResultDir); os.IsNotExist(err) {
-		err = os.MkdirAll(config.ResultDir, os.ModePerm)
+	if _, err := os.Stat(base.ImageDir); os.IsNotExist(err) {
+		err = os.MkdirAll(base.ImageDir, os.ModePerm)
 		if err != nil {
-			logrus.Warnf("initPath create err, dir:%s, err:%s", config.ResultDir, err.Error())
+			logrus.Warnf("initPath create err, dir:%s, err:%s", base.ImageDir, err.Error())
 			return false
 		}
 	}
 
 	// 检查并创建 download 目录
-	if _, err := os.Stat(base.DownloadDir); os.IsNotExist(err) {
-		err = os.MkdirAll(base.DownloadDir, os.ModePerm)
+	if _, err := os.Stat(base.TmpDir); os.IsNotExist(err) {
+		err = os.MkdirAll(base.TmpDir, os.ModePerm)
 		if err != nil {
-			logrus.Warnf("initPath create err, dir:%s, err:%s", base.DownloadDir, err.Error())
+			logrus.Warnf("initPath create err, dir:%s, err:%s", base.TmpDir, err.Error())
 			return false
 		}
 	}

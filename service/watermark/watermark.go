@@ -2,6 +2,7 @@ package watermark
 
 import (
 	"errors"
+	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -11,9 +12,11 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/golang/freetype"
 	"github.com/sirupsen/logrus"
+	"github.com/xiyouhpy/image/base"
 )
 
 // FontInfo 定义添加的文字信息
@@ -30,58 +33,59 @@ type FontInfo struct {
 }
 
 // ImgWatermark 图片压缩图片
-// 		srcImgName 表示需要被压缩合唱的图片文件名
-//		logoImgName 表示需要用来压缩合成的logo图片文件名
-//		newImgName 表示生成压缩合成的文件名
-func ImgWatermark(srcImgName string, logoImgName string, newImgName string) error {
-	if srcImgName == "" || logoImgName == "" || newImgName == "" {
-		logrus.Warnf("ImgWatermark params err, src_name:%s, dst_name:%s, new_name:%s", srcImgName, logoImgName, newImgName)
-		return errors.New("params err")
+// 		srcName 表示需要被压缩合唱的图片文件名
+//		logoName 表示需要用来压缩合成的logo图片文件名
+func ImgWatermark(srcName string, logoName string) (string, error) {
+	if srcName == "" || logoName == "" {
+		logrus.Warnf("ImgWatermark params err, src_name:%s, dst_name:%s", srcName, logoName)
+		return "", errors.New("params err")
 	}
 
-	srcImgDec, srcErr := imgDecode(srcImgName)
+	srcDec, srcErr := imgDecode(srcName)
 	if srcErr != nil {
-		logrus.Warnf("imgDecode err, img_name:%s, err:%s", srcImgName, srcErr.Error())
-		return srcErr
+		logrus.Warnf("imgDecode err, img_name:%s, err:%s", srcName, srcErr.Error())
+		return "", srcErr
 	}
-	logoImgDec, dstErr := imgDecode(logoImgName)
+	logoDec, dstErr := imgDecode(logoName)
 	if dstErr != nil {
-		logrus.Warnf("imgDecode err, img_name:%s, err:%s", logoImgName, dstErr.Error())
-		return dstErr
+		logrus.Warnf("imgDecode err, img_name:%s, err:%s", logoName, dstErr.Error())
+		return "", dstErr
 	}
 
 	// 获取源图片参数信息
-	srcBounds := srcImgDec.Bounds()
+	srcBounds := srcDec.Bounds()
 	// 设置水印图片坐标信息
-	location := image.Pt(srcBounds.Min.X, srcBounds.Min.Y)
+	location := image.Pt(srcBounds.Min.X+10, srcBounds.Min.Y+10)
 	// 设置水印图片RGBA信息
 	srcRGBA := image.NewNRGBA(srcBounds)
 	// 设置源图片参数信息
-	draw.Draw(srcRGBA, srcBounds, srcImgDec, image.ZP, draw.Src)
+	draw.Draw(srcRGBA, srcBounds, srcDec, image.ZP, draw.Src)
 	// 设置水印图片参数信息
-	draw.Draw(srcRGBA, logoImgDec.Bounds().Add(location), logoImgDec, image.ZP, draw.Over)
+	draw.Draw(srcRGBA, logoDec.Bounds().Add(location), logoDec, image.ZP, draw.Over)
 
 	// 生成合成图片，统一使用 jpeg 后缀（空间占用比较小）
-	if imgErr := imgEncode(newImgName, srcRGBA); imgErr != nil {
-		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newImgName, imgErr.Error())
-		return imgErr
+	strMd5 := base.GetMd5(srcName + logoName)
+	intTime := time.Now().Unix()
+	newName := fmt.Sprintf("%swatermark_%d_%s", base.ImageDir, intTime, strMd5[len(strMd5)-20:]+".jpg")
+	if imgErr := imgEncode(newName, srcRGBA); imgErr != nil {
+		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newName, imgErr.Error())
+		return "", imgErr
 	}
-	return nil
+	return newName, nil
 }
 
 // TextWatermark 文字压缩图片
-// 		srcImgName 表示需要被压缩合唱的图片文件名
-//		dstImgName 表示需要用来压缩合成的logo图片文件名
-//		newImgName 表示生成压缩合成的文件名
-func (font *FontInfo) TextWatermark(srcImgName string, ttfFontName string, newImgName string) error {
-	if srcImgName == "" || ttfFontName == "" || newImgName == "" {
-		logrus.Warnf("TextWatermark params err, src_name:%s, ttf_name:%s, new_name:%s", srcImgName, ttfFontName, newImgName)
-		return errors.New("params err")
+// 		srcName 表示需要被压缩合唱的图片文件名
+//		ttfName 表示需要用来压缩合成的logo图片文件名
+func (font *FontInfo) TextWatermark(srcName string, ttfName string) (string, error) {
+	if srcName == "" || ttfName == "" {
+		logrus.Warnf("TextWatermark params err, src_name:%s, ttf_name:%s", srcName, ttfName)
+		return "", errors.New("params err")
 	}
-	srcImgDec, srcErr := imgDecode(srcImgName)
+	srcImgDec, srcErr := imgDecode(srcName)
 	if srcErr != nil {
-		logrus.Warnf("TextWatermark decode err, img_name:%s, err:%s", srcImgName, srcErr.Error())
-		return srcErr
+		logrus.Warnf("TextWatermark decode err, img_name:%s, err:%s", srcName, srcErr.Error())
+		return "", srcErr
 	}
 
 	// 获取源图片参数信息
@@ -94,31 +98,34 @@ func (font *FontInfo) TextWatermark(srcImgName string, ttfFontName string, newIm
 			srcRGBA.Set(x, y, srcImgDec.At(x, y))
 		}
 	}
-	srcRGBA, srcErr = font.setTextWaterMark(srcRGBA, ttfFontName)
+	srcRGBA, srcErr = font.setTextWaterMark(srcRGBA, ttfName)
 	if srcErr != nil {
 		logrus.Warnf("setWaterMark err, fontinfo:%v, err:%s", font, srcErr.Error())
-		return srcErr
+		return "", srcErr
 	}
 
 	// 生成合成图片，统一使用 jpeg 后缀（空间占用比较小）
-	if imgErr := imgEncode(newImgName, srcRGBA); imgErr != nil {
-		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newImgName, imgErr.Error())
-		return imgErr
+	strMd5 := base.GetMd5(srcName + ttfName)
+	intTime := time.Now().Unix()
+	newName := fmt.Sprintf("%swatermark_%d_%s", base.ImageDir, intTime, strMd5[len(strMd5)-20:]+".jpg")
+	if imgErr := imgEncode(newName, srcRGBA); imgErr != nil {
+		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newName, imgErr.Error())
+		return "", imgErr
 	}
 
-	return nil
+	return newName, nil
 }
 
 // setTextWaterMark 添加文字水印
-func (font *FontInfo) setTextWaterMark(srcRGBA *image.NRGBA, ttfFontName string) (*image.NRGBA, error) {
-	if srcRGBA == nil || ttfFontName == "" {
-		logrus.Warnf("setTextWaterMark params err, ttf_name:%s", ttfFontName)
+func (font *FontInfo) setTextWaterMark(srcRGBA *image.NRGBA, ttfName string) (*image.NRGBA, error) {
+	if srcRGBA == nil || ttfName == "" {
+		logrus.Warnf("setTextWaterMark params err, ttf_name:%s", ttfName)
 		return nil, errors.New("params err")
 	}
 
-	fontBytes, fontBytesErr := ioutil.ReadFile(ttfFontName)
+	fontBytes, fontBytesErr := ioutil.ReadFile(ttfName)
 	if fontBytesErr != nil {
-		logrus.Warnf("ioutil.ReadFile err, ttf_name:%s, err:%s", ttfFontName, fontBytesErr.Error())
+		logrus.Warnf("ioutil.ReadFile err, ttf_name:%s, err:%s", ttfName, fontBytesErr.Error())
 		return nil, fontBytesErr
 	}
 	fontParse, fontParseErr := freetype.ParseFont(fontBytes)

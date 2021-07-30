@@ -1,10 +1,37 @@
 package config
 
-// WaterPicDir 压缩的水印图片目录
-const WaterPicDir = "./config/water/pic/"
+import (
+	"os"
+	"strings"
 
-// WaterTtfDir 压缩的水印ttf目录
-const WaterTtfDir = "./config/water/ttf/"
+	"github.com/sirupsen/logrus"
+	"github.com/xiyouhpy/image/base"
+)
 
-// ResultDir 压缩的结果图片目录
-const ResultDir = "./data/result/"
+// GetLogo 根据 logo名判断该文件是否存在并获取 logo 文件详细路径
+func GetLogo(logName string) string {
+	strFileName := base.LogoDir + logName
+	if !strings.Contains(strFileName, ".png") {
+		strFileName = strFileName + ".png"
+	}
+	if _, err := os.Stat(strFileName); os.IsNotExist(err) {
+		logrus.Errorf("getLogo Stat err, logo:%s, err:%s", strFileName, err.Error())
+		return ""
+	}
+
+	return strFileName
+}
+
+// GetTtf 根据 ttf名判断该文件是否存在并获取 ttf 文件详细路径
+func GetTtf(ttfName string) string {
+	strFileName := base.TtfDir + ttfName
+	if !strings.Contains(strFileName, ".ttf") {
+		strFileName = strFileName + ".ttf"
+	}
+	if _, err := os.Stat(strFileName); os.IsNotExist(err) {
+		logrus.Errorf("getTtf Stat err, logo:%s, err:%s", strFileName, err.Error())
+		return ""
+	}
+
+	return strFileName
+}
