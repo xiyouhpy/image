@@ -3,9 +3,8 @@ package router
 import (
 	"os"
 
-	"github.com/xiyouhpy/image/base"
-
 	"github.com/sirupsen/logrus"
+	"github.com/xiyouhpy/image/base"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xiyouhpy/image/controller"

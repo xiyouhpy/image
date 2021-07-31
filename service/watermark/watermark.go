@@ -64,13 +64,13 @@ func ImgWatermark(srcName string, logoName string) (string, error) {
 	draw.Draw(srcRGBA, logoDec.Bounds().Add(location), logoDec, image.ZP, draw.Over)
 
 	// 生成合成图片，统一使用 jpeg 后缀（空间占用比较小）
-	strMd5 := base.GetMd5(srcName + logoName)
-	intTime := time.Now().Unix()
-	newName := fmt.Sprintf("%swatermark_%d_%s", base.ImageDir, intTime, strMd5[len(strMd5)-20:]+".jpg")
+	md5 := base.GetMd5(srcName + logoName)
+	newName := fmt.Sprintf("%simage_%d_%s", base.ImageDir, time.Now().Unix(), md5[len(md5)-20:]+".jpg")
 	if imgErr := imgEncode(newName, srcRGBA); imgErr != nil {
 		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newName, imgErr.Error())
 		return "", imgErr
 	}
+
 	return newName, nil
 }
 
@@ -105,9 +105,8 @@ func (font *FontInfo) TextWatermark(srcName string, ttfName string) (string, err
 	}
 
 	// 生成合成图片，统一使用 jpeg 后缀（空间占用比较小）
-	strMd5 := base.GetMd5(srcName + ttfName)
-	intTime := time.Now().Unix()
-	newName := fmt.Sprintf("%swatermark_%d_%s", base.ImageDir, intTime, strMd5[len(strMd5)-20:]+".jpg")
+	md5 := base.GetMd5(srcName + ttfName)
+	newName := fmt.Sprintf("%simage_%d_%s", base.ImageDir, time.Now().Unix(), md5[len(md5)-20:]+".jpg")
 	if imgErr := imgEncode(newName, srcRGBA); imgErr != nil {
 		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newName, imgErr.Error())
 		return "", imgErr

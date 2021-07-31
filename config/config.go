@@ -1,7 +1,9 @@
 package config
 
 import (
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -34,4 +36,23 @@ func GetTtf(ttfName string) string {
 	}
 
 	return strFileName
+}
+
+// CleanFile 清理过期文件
+func CleanFile(cleanDir string, expireTime int64) error {
+	fileList, listErr := ioutil.ReadDir(cleanDir)
+	if listErr != nil {
+		logrus.Errorf("CleanFile ReadDir err, cleanDir:%s, err:%s", cleanDir, listErr.Error())
+		return listErr
+	}
+
+	for _, file := range fileList {
+		fileName := file.Name()
+		if fileName != "." && fileName != ".." && file.ModTime().Unix() < expireTime {
+			err := os.RemoveAll(filepath.Join(cleanDir, "/", fileName))
+			logrus.Infof("CleanFile RemoveAll, cleanName:%s, err:%+v", fileName, err)
+		}
+	}
+
+	return nil
 }
