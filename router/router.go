@@ -2,13 +2,17 @@ package router
 
 import (
 	"os"
-
-	"github.com/sirupsen/logrus"
-	"github.com/xiyouhpy/image/base"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
+	"github.com/xiyouhpy/image/base"
+	"github.com/xiyouhpy/image/config"
 	"github.com/xiyouhpy/image/controller"
 )
+
+// tmpFileExpireTime 临时文件过期时间设置
+const tmpFileExpireTime = 3600
 
 // Server ...
 func Server() {
@@ -16,6 +20,9 @@ func Server() {
 
 	// 创建必要的目录
 	initPath()
+
+	// 清理过期文件
+	go cleanPath()
 
 	// 路由注册和跳转
 	registerService(r)
@@ -53,4 +60,14 @@ func initPath() bool {
 	}
 
 	return true
+}
+
+// cleanPath ...
+func cleanPath() {
+	ticker := time.NewTicker(time.Minute * time.Duration(10))
+	for range ticker.C {
+		intNow := time.Now().Unix() - tmpFileExpireTime
+		config.CleanFile(base.ImageDir, intNow)
+		config.CleanFile(base.TmpDir, intNow)
+	}
 }
