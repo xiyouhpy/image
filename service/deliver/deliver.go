@@ -1,14 +1,13 @@
 package deliver
 
 import (
+	"github.com/xiyouhpy/image/util"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/xiyouhpy/image/base"
 
 	"github.com/sirupsen/logrus"
 )
@@ -27,9 +26,9 @@ func Download(strURL string) (string, error) {
 	}
 	defer rsp.Body.Close()
 
-	dstFile := base.TmpDir + filepath.Base(strURL)
+	dstFile := util.TmpWmDir + filepath.Base(strURL)
 	if !strings.Contains(dstFile, ".") {
-		dstFile = base.TmpDir + filepath.Base(strURL) + ".jpg"
+		dstFile = util.TmpWmDir + filepath.Base(strURL) + ".jpg"
 	}
 	file, fileErr := os.Create(dstFile)
 	if fileErr != nil {

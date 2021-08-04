@@ -1,12 +1,12 @@
 package router
 
 import (
+	"github.com/xiyouhpy/image/util"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"github.com/xiyouhpy/image/base"
 	"github.com/xiyouhpy/image/config"
 	"github.com/xiyouhpy/image/controller"
 )
@@ -42,19 +42,19 @@ func registerService(r *gin.Engine) {
 // initPath ...
 func initPath() bool {
 	// 检查并创建 result 目录
-	if _, err := os.Stat(base.ImageDir); os.IsNotExist(err) {
-		err = os.MkdirAll(base.ImageDir, os.ModePerm)
+	if _, err := os.Stat(util.ImgWmkDir); os.IsNotExist(err) {
+		err = os.MkdirAll(util.ImgWmkDir, os.ModePerm)
 		if err != nil {
-			logrus.Warnf("initPath create err, dir:%s, err:%s", base.ImageDir, err.Error())
+			logrus.Warnf("initPath create err, dir:%s, err:%s", util.ImgWmkDir, err.Error())
 			return false
 		}
 	}
 
 	// 检查并创建 download 目录
-	if _, err := os.Stat(base.TmpDir); os.IsNotExist(err) {
-		err = os.MkdirAll(base.TmpDir, os.ModePerm)
+	if _, err := os.Stat(util.TmpWmDir); os.IsNotExist(err) {
+		err = os.MkdirAll(util.TmpWmDir, os.ModePerm)
 		if err != nil {
-			logrus.Warnf("initPath create err, dir:%s, err:%s", base.TmpDir, err.Error())
+			logrus.Warnf("initPath create err, dir:%s, err:%s", util.TmpWmDir, err.Error())
 			return false
 		}
 	}
@@ -67,7 +67,7 @@ func cleanPath() {
 	ticker := time.NewTicker(time.Minute * time.Duration(10))
 	for range ticker.C {
 		intNow := time.Now().Unix() - tmpFileExpireTime
-		config.CleanFile(base.ImageDir, intNow)
-		config.CleanFile(base.TmpDir, intNow)
+		config.CleanFile(util.ImgWmkDir, intNow)
+		config.CleanFile(util.TmpWmDir, intNow)
 	}
 }

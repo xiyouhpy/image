@@ -3,20 +3,16 @@ package watermark
 import (
 	"errors"
 	"fmt"
+	"github.com/xiyouhpy/image/base"
+	"github.com/xiyouhpy/image/util"
 	"image"
 	"image/color"
 	"image/draw"
-	"image/jpeg"
-	"image/png"
 	"io/ioutil"
-	"os"
-	"path"
-	"strings"
 	"time"
 
 	"github.com/golang/freetype"
 	"github.com/sirupsen/logrus"
-	"github.com/xiyouhpy/image/base"
 )
 
 // FontInfo 定义添加的文字信息
@@ -41,12 +37,12 @@ func ImgWatermark(srcName string, logoName string) (string, error) {
 		return "", errors.New("params err")
 	}
 
-	srcDec, srcErr := imgDecode(srcName)
+	srcDec, srcErr := base.ImgDecode(srcName)
 	if srcErr != nil {
 		logrus.Warnf("imgDecode err, img_name:%s, err:%s", srcName, srcErr.Error())
 		return "", srcErr
 	}
-	logoDec, dstErr := imgDecode(logoName)
+	logoDec, dstErr := base.ImgDecode(logoName)
 	if dstErr != nil {
 		logrus.Warnf("imgDecode err, img_name:%s, err:%s", logoName, dstErr.Error())
 		return "", dstErr
@@ -64,9 +60,9 @@ func ImgWatermark(srcName string, logoName string) (string, error) {
 	draw.Draw(srcRGBA, logoDec.Bounds().Add(location), logoDec, image.ZP, draw.Over)
 
 	// 生成合成图片，统一使用 jpeg 后缀（空间占用比较小）
-	md5 := base.GetMd5(srcName + logoName)
-	newName := fmt.Sprintf("%simage_%d_%s", base.ImageDir, time.Now().Unix(), md5[len(md5)-20:]+".jpg")
-	if imgErr := imgEncode(newName, srcRGBA); imgErr != nil {
+	md5 := util.GetMd5(srcName + logoName)
+	newName := fmt.Sprintf("%simage_%d_%s", util.ImgWmkDir, time.Now().Unix(), md5[len(md5)-20:]+".jpg")
+	if imgErr := base.ImgEncode(newName, srcRGBA); imgErr != nil {
 		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newName, imgErr.Error())
 		return "", imgErr
 	}
@@ -82,7 +78,7 @@ func (font *FontInfo) TextWatermark(srcName string, ttfName string) (string, err
 		logrus.Warnf("TextWatermark params err, src_name:%s, ttf_name:%s", srcName, ttfName)
 		return "", errors.New("params err")
 	}
-	srcImgDec, srcErr := imgDecode(srcName)
+	srcImgDec, srcErr := base.ImgDecode(srcName)
 	if srcErr != nil {
 		logrus.Warnf("TextWatermark decode err, img_name:%s, err:%s", srcName, srcErr.Error())
 		return "", srcErr
@@ -105,9 +101,9 @@ func (font *FontInfo) TextWatermark(srcName string, ttfName string) (string, err
 	}
 
 	// 生成合成图片，统一使用 jpeg 后缀（空间占用比较小）
-	md5 := base.GetMd5(srcName + ttfName)
-	newName := fmt.Sprintf("%simage_%d_%s", base.ImageDir, time.Now().Unix(), md5[len(md5)-20:]+".jpg")
-	if imgErr := imgEncode(newName, srcRGBA); imgErr != nil {
+	md5 := util.GetMd5(srcName + ttfName)
+	newName := fmt.Sprintf("%simage_%d_%s", util.ImgWmkDir, time.Now().Unix(), md5[len(md5)-20:]+".jpg")
+	if imgErr := base.ImgEncode(newName, srcRGBA); imgErr != nil {
 		logrus.Warnf("imgEncode err, img_name:%s, err:%s", newName, imgErr.Error())
 		return "", imgErr
 	}
@@ -154,61 +150,4 @@ func (font *FontInfo) setTextWaterMark(srcRGBA *image.NRGBA, ttfName string) (*i
 	}
 
 	return srcRGBA, nil
-}
-
-// imgDecode 图片解码
-func imgDecode(imgName string) (image.Image, error) {
-	imgBin, imgErr := os.Open(imgName)
-	if imgErr != nil {
-		logrus.Warnf("os.Open err, img_name:%s, err:%s", imgName, imgErr.Error())
-		return nil, imgErr
-	}
-	defer imgBin.Close()
-
-	var imgDec image.Image
-	fileType := strings.Replace(path.Ext(imgName), ".", "", 1)
-	switch fileType {
-	case "png":
-		imgDec, imgErr = png.Decode(imgBin)
-		break
-	case "jpg", "jpeg":
-		imgDec, imgErr = jpeg.Decode(imgBin)
-		break
-	default:
-		imgErr = errors.New("img decode err")
-		break
-	}
-
-	return imgDec, imgErr
-}
-
-// imgEncode 图片编码
-func imgEncode(imgName string, srcRGBA *image.NRGBA) error {
-	if _, imgErr := os.Stat(imgName); os.IsExist(imgErr) {
-		if imgErr = os.Remove(imgName); imgErr != nil {
-			logrus.Warnf("os.Remove err, img_name:%s, err:%s", imgName, imgErr.Error())
-			return imgErr
-		}
-	}
-	imgNew, imgErr := os.Create(imgName)
-	if imgErr != nil {
-		logrus.Warnf("os.Create err, img_name:%s, err:%s", imgName, imgErr.Error())
-		return imgErr
-	}
-	defer imgNew.Close()
-
-	fileType := strings.Replace(path.Ext(imgName), ".", "", 1)
-	switch fileType {
-	case "png":
-		imgErr = png.Encode(imgNew, srcRGBA)
-		break
-	case "jpg", "jpeg":
-		imgErr = jpeg.Encode(imgNew, srcRGBA, &jpeg.Options{Quality: 100})
-		break
-	default:
-		imgErr = errors.New("img encode err")
-		break
-	}
-
-	return imgErr
 }
