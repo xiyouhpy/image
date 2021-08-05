@@ -1,7 +1,6 @@
 package deliver
 
 import (
-	"github.com/xiyouhpy/image/util"
 	"io"
 	"net/http"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"github.com/xiyouhpy/image/util"
 )
 
 // downloadTimeOut 下载超时设置

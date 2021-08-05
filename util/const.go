@@ -6,8 +6,18 @@ const LogoDir = "./config/logo/"
 // TtfDir 压缩的水印ttf目录
 const TtfDir = "./config/ttf/"
 
-// ImgWmkDir 压缩的结果图片目录
-const ImgWmkDir = "./data/image/watermark/"
+// ImgWmDir 水印的结果图片目录
+const ImgWmDir = "./data/image/watermark/"
 
-// TmpWaterMarkDir 临时文件目录
+// TmpWmDir 临时文件目录
 const TmpWmDir = "/tmp/image/watermark/"
+
+// ImgCutDir 裁剪的结果图片目录
+const ImgCutDir = "./data/image/cut/"
+
+// ArrDirs 检查、创建、清理的目录列表
+var ArrDirs = []string{
+	ImgWmDir,
+	TmpWmDir,
+	ImgCutDir,
+}

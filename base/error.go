@@ -3,7 +3,7 @@ package base
 
 // 错误号code信息
 const (
-	// 通用错误号，错误号范围 [0, 10000)
+	// ErrCodeSuccess 通用错误号，错误号范围 [0, 10000)
 	ErrCodeSuccess            = 0  // 请求成功
 	ErrCodeUnknownError       = 1  // 未知错误
 	ErrCodeParamsError        = 2  // 参数错误
