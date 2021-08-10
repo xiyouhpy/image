@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BIN="image"
-BINPID="image.pid"
+BINPID="run.pid"
 [[ -d bin/ ]] || mkdir -p bin
 
 start() {
